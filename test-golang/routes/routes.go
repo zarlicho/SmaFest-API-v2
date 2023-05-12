@@ -45,6 +45,7 @@ func SetupRouter() *gin.Engine {
 		v1.POST("/regis", controllers.PostDataRegis)
 		v1.POST("/callbacks", controllers.Callbacksxen)
 		v1.GET("/printTicket", controllers.CheckOrderID)
+		v1.GET("/getTicket", controllers.SearchData)
 		v1.GET("/ping", controllers.GetPing)
 
 		// PRODUCT

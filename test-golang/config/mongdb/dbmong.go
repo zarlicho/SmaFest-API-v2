@@ -1,15 +1,18 @@
 package mongdb
 
 import (
-    "context"
-    "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
+	"context"
 	"fmt"
-    "time"
 	"os"
+	"time"
+
 	log "github.com/sirupsen/logrus"
-    // "test-golang/models"
-    "go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	// "test-golang/models"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 var client *mongo.Client
@@ -43,6 +46,7 @@ func ConnectToDB() {
 	// Set the default database
 	db = client.Database("SmaFest")
 }
+
 // Example of how to use the db variable to interact with MongoDB
 func InsertData(data interface{}, collections string) {
 	collection := db.Collection(collections)
@@ -51,10 +55,10 @@ func InsertData(data interface{}, collections string) {
 		log.Fatal(err)
 	}
 	log.Info("Data inserted successfully!")
-	
+
 }
 
-func InsertDataTicket(data interface{},filter bson.M, collections string) {
+func InsertDataTicket(data interface{}, filter bson.M, collections string) {
 	collection := db.Collection(collections)
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
@@ -67,10 +71,10 @@ func InsertDataTicket(data interface{},filter bson.M, collections string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if results != nil{
+	if results != nil {
 		log.Info("data already exist")
 		// return "data already exist"
-	}else{
+	} else {
 		_, err := collection.InsertOne(context.Background(), data)
 		if err != nil {
 			log.Fatal(err)
@@ -80,17 +84,47 @@ func InsertDataTicket(data interface{},filter bson.M, collections string) {
 }
 
 func GetMongoData(filter bson.M, collections string, fields string) ([]bson.M, error) {
-    ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
-    collection := db.Collection(collections)
-    cur, err := collection.Find(ctx, filter, options.Find().SetProjection(bson.M{fields: 1}))
-    if err != nil {
-        return nil, err
-    }
-    var result []bson.M
-    if err := cur.All(ctx, &result); err != nil {
-        return nil, err
-    }
-    return result, nil
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	collection := db.Collection(collections)
+	cur, err := collection.Find(ctx, filter, options.Find().SetProjection(bson.M{fields: 1}))
+	if err != nil {
+		return nil, err
+	}
+	var result []bson.M
+	if err := cur.All(ctx, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func SearchMongoData(query string, collectionName string, fields string) ([]bson.M, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection := db.Collection(collectionName)
+
+	// Create the $or filter
+	filter := bson.M{
+		"$or": bson.A{
+			bson.M{"name": bson.M{"$regex": primitive.Regex{Pattern: query, Options: "i"}}},
+			bson.M{"email": bson.M{"$regex": primitive.Regex{Pattern: query, Options: "i"}}},
+			bson.M{"phoneNumber": bson.M{"$regex": primitive.Regex{Pattern: query, Options: "i"}}},
+		},
+	}
+
+	// Find the documents in the collection
+	cur, err := collection.Find(ctx, filter, options.Find().SetProjection(bson.M{fields: 1}))
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the documents as a slice of bson.M
+	var result []bson.M
+	if err := cur.All(ctx, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // Example of how to use the db variable to interact with MongoDB
@@ -102,35 +136,36 @@ func UpdateData(filter interface{}, update interface{}, collections string) {
 	}
 	log.Info("Data updated successfully!")
 }
-//update order id
+
+// update order id
 func UpdateOrderID(email, orderID string) error {
-    // filter untuk mencari data berdasarkan nama
+	// filter untuk mencari data berdasarkan nama
 	collection := db.Collection("preTicket")
-    filter := bson.M{"email": email}
+	filter := bson.M{"email": email}
 
-    // update untuk mengubah nilai orderID
-    update := bson.M{
-        "$set": bson.M{
-            "orderid": orderID,
-        },
-    }
+	// update untuk mengubah nilai orderID
+	update := bson.M{
+		"$set": bson.M{
+			"orderid": orderID,
+		},
+	}
 
-    // konfigurasi options untuk operasi update
-    opts := options.Update().SetUpsert(false)
+	// konfigurasi options untuk operasi update
+	opts := options.Update().SetUpsert(false)
 
-    // panggil fungsi UpdateOne untuk melakukan operasi update pada database
-    result, err := collection.UpdateOne(context.Background(), filter, update, opts)
-    if err != nil {
-        return fmt.Errorf("failed to update orderID for %s: %v", email, err)
-    }
+	// panggil fungsi UpdateOne untuk melakukan operasi update pada database
+	result, err := collection.UpdateOne(context.Background(), filter, update, opts)
+	if err != nil {
+		return fmt.Errorf("failed to update orderID for %s: %v", email, err)
+	}
 
-    // cek apakah ada data yang berhasil diupdate
-    if result.ModifiedCount == 0 {
-        return fmt.Errorf("no data found for %s", email)
-    }
+	// cek apakah ada data yang berhasil diupdate
+	if result.ModifiedCount == 0 {
+		return fmt.Errorf("no data found for %s", email)
+	}
 
-    fmt.Printf("orderID updated for %s\n", email)
-    return nil
+	fmt.Printf("orderID updated for %s\n", email)
+	return nil
 }
 
 // Example of how to use the db variable to interact with MongoDB
@@ -151,6 +186,3 @@ func CloseDBConnection() {
 	}
 	log.Info("Disconnected from MongoDB!")
 }
-
-    
-    

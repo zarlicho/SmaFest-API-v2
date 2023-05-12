@@ -1,17 +1,21 @@
 package controllers
+
 import (
 	"net/http"
-	"github.com/gin-gonic/gin"
-	"test-golang/models"
 	"test-golang/config/mongdb"
+	"test-golang/models"
 	"test-golang/paymenthandler"
+
+	"github.com/gin-gonic/gin"
+
 	// "myProject/model"
 	// "myProject/initializers"
-	"github.com/go-playground/validator/v10"
-	"strconv"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
+	"strconv"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson"
 	// "crypto/rand"
 	// "golang.org/x/crypto/bcrypt"
 	// "github.com/golang-jwt/jwt/v4"
@@ -22,12 +26,12 @@ var datasis = []models.PreTicket{}
 var ticketData = []models.Ticket{}
 var Callbackss = []models.Callbacks{}
 
-func GetPing(c *gin.Context){
+func GetPing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
 	})
 }
-func PostDataRegis(c *gin.Context){
+func PostDataRegis(c *gin.Context) {
 	var newTicket models.PreTicket
 	if err := c.BindJSON(&newTicket); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
@@ -41,59 +45,76 @@ func PostDataRegis(c *gin.Context){
 	totalamount, err := strconv.ParseInt(newTicket.Amount, 10, 64)
 	if err != nil {
 	}
-	snap:=paymenthandler.CreateInvoice(newTicket.Name,newTicket.Email,newTicket.PhoneNumber,orderids,totalamount)
-	mongdb.InsertData(newTicket,"preTicket")
+	snap := paymenthandler.CreateInvoice(newTicket.Name, newTicket.Email, newTicket.PhoneNumber, orderids, totalamount)
+	mongdb.InsertData(newTicket, "preTicket")
 	mongdb.UpdateOrderID(newTicket.Email, orderids)
 	c.JSON(http.StatusOK, gin.H{
-		"newdata":newTicket,
-		"snap":snap,
+		"newdata": newTicket,
+		"snap":    snap,
 	})
 }
 
-func extract(filds,id string)string{
-	datas,_ := mongdb.GetMongoData(bson.M{"orderid": id},"preTicket",filds)
+func extract(filds, id string) string {
+	datas, _ := mongdb.GetMongoData(bson.M{"orderid": id}, "preTicket", filds)
 	output := fmt.Sprint(datas)
 	value := output[5 : len(output)-1]
 	splitStr := strings.Split(value, filds+":")
 	values := splitStr[1]
 	return values
 }
-func getDataFromid(filds,id string)string{
-	datas,_ := mongdb.GetMongoData(bson.M{"orderid": id},"Ticket",filds)
+func getDataFromid(filds, id string) string {
+	datas, _ := mongdb.GetMongoData(bson.M{"orderid": id}, "Ticket", filds)
 	output := fmt.Sprint(datas)
 	value := output[5 : len(output)-1]
 	splitStr := strings.Split(value, filds+":")
 	values := splitStr[1]
 	return values
 }
-func CheckOrderID(c *gin.Context){
-	orderId := c.Query("orderid")
-	qrcode := getDataFromid("qrcode",orderId)
-	transactionid := getDataFromid("transactionid",orderId)
-	name := getDataFromid("name",orderId)
-	email := getDataFromid("email",orderId)
-	ticketid := getDataFromid("ticketid",orderId)
+
+func SearchData(c *gin.Context) {
+	query := c.Query("qury")
+	qrcode, _ := mongdb.SearchMongoData(query, "Ticket", "qrcode")
+	name, _ := mongdb.SearchMongoData(query, "Ticket", "name")
+	email, _ := mongdb.SearchMongoData(query, "Ticket", "email")
+	ticketid, _ := mongdb.SearchMongoData(query, "Ticket", "ticketid")
+	orderId, _ := mongdb.SearchMongoData(query, "Ticket", "orderid")
 	c.JSON(http.StatusOK, gin.H{
-		"qrcode": qrcode,
-		"transaction id":transactionid, 
-		"name":name, 
-		"email":email, 
-		"ticket id":ticketid, 
-		"order id":orderId, 
+		"qrcode":    qrcode,
+		"name":      name,
+		"email":     email,
+		"ticket id": ticketid,
+		"order id":  orderId,
 	})
 }
 
-func Callbacksxen(c *gin.Context){
+func CheckOrderID(c *gin.Context) {
+	orderId := c.Query("orderid")
+	qrcode := getDataFromid("qrcode", orderId)
+	transactionid := getDataFromid("transactionid", orderId)
+	name := getDataFromid("name", orderId)
+	email := getDataFromid("email", orderId)
+	ticketid := getDataFromid("ticketid", orderId)
+	c.JSON(http.StatusOK, gin.H{
+		"qrcode":         qrcode,
+		"transaction id": transactionid,
+		"name":           name,
+		"email":          email,
+		"ticket id":      ticketid,
+		"order id":       orderId,
+	})
+}
+
+func Callbacksxen(c *gin.Context) {
 	type tempData struct {
-		OrderID       		string
-		Name     			string            
-		Email    			string       	
-		PhoneNumber			string		
-		TicketID 			string
-		TransactionID 		string				
-		Amount		 		string				
-		TransactionStatus 	string				
-		QRCODE   			string				
+		OrderID           string
+		Name              string
+		Email             string
+		PhoneNumber       string
+		TicketID          string
+		TransactionID     string
+		Amount            string
+		TransactionStatus string
+		QRCODE            string
 	}
 	var payload map[string]interface{}
 	err := c.BindJSON(&payload)
@@ -107,13 +128,13 @@ func Callbacksxen(c *gin.Context){
 	if payload["status"] == "PAID" {
 		// Process the payment
 		upTempData := tempData{
-			OrderID:       orderID.(string),
-			Name:          extract("name", orderID.(string)),
-			Email:         extract("email", orderID.(string)),
-			PhoneNumber:   extract("phonenumber", orderID.(string)),
-			Amount:        extract("amount", orderID.(string)),
-			TicketID:      paymenthandler.GenerateTicketID(),
-			QRCODE:        paymenthandler.GenerateRandomQRCode(),
+			OrderID:     orderID.(string),
+			Name:        extract("name", orderID.(string)),
+			Email:       extract("email", orderID.(string)),
+			PhoneNumber: extract("phonenumber", orderID.(string)),
+			Amount:      extract("amount", orderID.(string)),
+			TicketID:    paymenthandler.GenerateTicketID(),
+			QRCODE:      paymenthandler.GenerateRandomQRCode(),
 		}
 		fmt.Println(upTempData)
 		mongdb.InsertDataTicket(upTempData, bson.M{"orderid": orderID.(string)}, "Ticket")
