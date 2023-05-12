@@ -5,12 +5,24 @@ import (
 	// "test-golang/middleware"
 
 	// "github.com/gin-contrib/static"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	// gin init
 	r := gin.Default()
+	router := gin.New()
+	var Cors = cors.Config{
+		AllowMethods:     []string{"GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"},
+		AllowHeaders:     []string{"Origin", "authorization", "Content-Length", "Content-Type", "User-Agent", "Referrer", "Host", "Token", "X-Timestamp", "X-Source", "X-Signature"},
+		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
+		AllowCredentials: true,
+		AllowOrigins:     []string{"*"},
+		MaxAge:           86400,
+	}
+	// router.Use(cors.New(configs.Cors))
+	router.Use(cors.New(Cors))
 	v1 := r.Group("/api")
 	{
 		// TEST 1 - 5
