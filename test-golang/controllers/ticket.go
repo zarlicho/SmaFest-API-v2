@@ -78,12 +78,14 @@ func SearchData(c *gin.Context) {
 	email, _ := mongdb.SearchMongoData(query, "Ticket", "email")
 	ticketid, _ := mongdb.SearchMongoData(query, "Ticket", "ticketid")
 	orderId, _ := mongdb.SearchMongoData(query, "Ticket", "orderid")
+	phone, _ := mongdb.SearchMongoData(query, "Ticket", "phonenumber")
 	c.JSON(http.StatusOK, gin.H{
-		"qrcode":    qrcode,
-		"name":      name,
-		"email":     email,
-		"ticket id": ticketid,
-		"order id":  orderId,
+		"qrcode":       qrcode,
+		"name":         name,
+		"email":        email,
+		"ticket id":    ticketid,
+		"order id":     orderId,
+		"phone number": phone,
 	})
 }
 
