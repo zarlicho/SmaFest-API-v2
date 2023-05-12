@@ -28,6 +28,13 @@ func SetupRouter() *gin.Engine {
 	v1 := r.Group("/api")
 	{
 		// TEST 1 - 5
+		v1.OPTIONS("/regis", func(c *gin.Context) {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST")
+
+			c.AbortWithStatus(200)
+		})
 		v1.POST("/regis", controllers.PostDataRegis)
 		v1.POST("/callbacks", controllers.Callbacksxen)
 		v1.GET("/printTicket", controllers.CheckOrderID)
