@@ -18,23 +18,23 @@ func SetupRouter() *gin.Engine {
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowMethods = []string{"GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"}
-	config.AllowHeaders = []string{"Origin", "Authorization", "Content-Length", "Content-Type", "User-Agent", "Referrer", "Host", "Token", "X-Timestamp", "X-Source", "X-Signature"}
+	config.AllowHeaders = []string{"Origin", "authorization", "Content-Length", "Content-Type", "User-Agent", "Referrer", "Host", "Token", "X-Timestamp", "X-Source", "X-Signature", "withCredentials"} // Tambahkan "withCredentials" ke dalam AllowHeaders
 	config.ExposeHeaders = []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"}
 	config.AllowCredentials = true
 	config.MaxAge = 86400
 
-	// Gunakan middleware CORS
 	router.Use(cors.New(config))
+
 	v1 := r.Group("/api")
 	{
-		// TEST 1 - 5
 		v1.OPTIONS("/regis", func(c *gin.Context) {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, withCredentials") // Tambahkan "withCredentials" ke dalam Allow-Headers
 			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST")
 
 			c.AbortWithStatus(200)
 		})
+
 		v1.POST("/regis", controllers.PostDataRegis)
 		v1.POST("/callbacks", controllers.Callbacksxen)
 		v1.GET("/printTicket", controllers.CheckOrderID)
