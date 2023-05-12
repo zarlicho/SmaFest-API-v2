@@ -10,19 +10,21 @@ import (
 )
 
 func SetupRouter() *gin.Engine {
-	// gin init
+	// inisialisasi Gin
 	r := gin.Default()
 	router := gin.New()
-	var Cors = cors.Config{
-		AllowMethods:     []string{"GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"},
-		AllowHeaders:     []string{"Origin", "authorization", "Content-Length", "Content-Type", "User-Agent", "Referrer", "Host", "Token", "X-Timestamp", "X-Source", "X-Signature"},
-		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
-		AllowCredentials: true,
-		AllowOrigins:     []string{"*"},
-		MaxAge:           86400,
-	}
-	// router.Use(cors.New(configs.Cors))
-	router.Use(cors.New(Cors))
+
+	// Konfigurasi CORS
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowMethods = []string{"GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"}
+	config.AllowHeaders = []string{"Origin", "Authorization", "Content-Length", "Content-Type", "User-Agent", "Referrer", "Host", "Token", "X-Timestamp", "X-Source", "X-Signature"}
+	config.ExposeHeaders = []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"}
+	config.AllowCredentials = true
+	config.MaxAge = 86400
+
+	// Gunakan middleware CORS
+	router.Use(cors.New(config))
 	v1 := r.Group("/api")
 	{
 		// TEST 1 - 5
