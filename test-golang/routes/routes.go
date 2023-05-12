@@ -28,7 +28,7 @@ func SetupRouter() *gin.Engine {
 	v1 := r.Group("/api")
 	{
 		v1.OPTIONS("/regis", func(c *gin.Context) {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", "https://1da7-2001-448a-2020-52c1-381e-7a92-6008-674b.ngrok-free.app")
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, withCredentials") // Tambahkan "withCredentials" ke dalam Allow-Headers
 			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST")
 
