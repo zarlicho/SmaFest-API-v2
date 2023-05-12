@@ -34,6 +34,13 @@ func SetupRouter() *gin.Engine {
 
 			c.AbortWithStatus(200)
 		})
+		v1.OPTIONS("/printTicket", func(c *gin.Context) {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, withCredentials") // Tambahkan "withCredentials" ke dalam Allow-Headers
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST")
+
+			c.AbortWithStatus(200)
+		})
 
 		v1.POST("/regis", controllers.PostDataRegis)
 		v1.POST("/callbacks", controllers.Callbacksxen)
