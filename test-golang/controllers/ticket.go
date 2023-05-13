@@ -71,14 +71,23 @@ func getDataFromid(filds, id string) string {
 	return values
 }
 
+func srchData(querys, filds string) string {
+	datas, _ := mongdb.SearchMongoData(querys, "Ticket", filds)
+	output := fmt.Sprint(datas)
+	value := output[5 : len(output)-1]
+	splitStr := strings.Split(value, filds+":")
+	values := splitStr[1]
+	return values
+}
+
 func SearchData(c *gin.Context) {
 	query := c.Query("qury")
-	qrcode, _ := mongdb.SearchMongoData(query, "Ticket", "qrcode")
-	name, _ := mongdb.SearchMongoData(query, "Ticket", "name")
-	email, _ := mongdb.SearchMongoData(query, "Ticket", "email")
-	ticketid, _ := mongdb.SearchMongoData(query, "Ticket", "ticketid")
-	orderId, _ := mongdb.SearchMongoData(query, "Ticket", "orderid")
-	phone, _ := mongdb.SearchMongoData(query, "Ticket", "phonenumber")
+	qrcode := srchData(query, "qrcode")
+	name := srchData(query, "name")
+	email := srchData(query, "email")
+	ticketid := srchData(query, "ticketid")
+	orderId := srchData(query, "orderid")
+	phone := srchData(query, "phonenumber")
 	c.JSON(http.StatusOK, gin.H{
 		"qrcode":       qrcode,
 		"name":         name,
