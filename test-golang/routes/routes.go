@@ -37,14 +37,14 @@ func SetupRouter() *gin.Engine {
 		v1.OPTIONS("/printTicket", func(c *gin.Context) {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, withCredentials") // Tambahkan "withCredentials" ke dalam Allow-Headers
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET")
 
 			c.AbortWithStatus(200)
 		})
 		v1.OPTIONS("/getTicket", func(c *gin.Context) {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, withCredentials") // Tambahkan "withCredentials" ke dalam Allow-Headers
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET")
 
 			c.AbortWithStatus(200)
 		})
