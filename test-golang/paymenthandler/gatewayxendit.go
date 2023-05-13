@@ -16,7 +16,7 @@ func CreateInvoice(name, email, phone, orderid string, amount int64) string {
 		PayerEmail:  email,
 		Description: "ticket-SmaFest",
 		// SuccessRedirectURL: "https://www.youtube.com/watch?v=5Bkub_BYZvU",
-		SuccessRedirectURL: "https://24b0-2001-448a-2020-942e-1091-a4c8-fcbf-8c45.ngrok-free.app/printTicket?orderid=" + orderid,
+		SuccessRedirectURL: "https://9522-2001-448a-2020-942e-1091-a4c8-fcbf-8c45.ngrok-free.app/printTicket?orderid=" + orderid,
 		Customer: xendit.InvoiceCustomer{
 			GivenNames:   name,
 			Surname:      name,
